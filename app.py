@@ -37,17 +37,22 @@ def spill_lyd(data):
         unsafe_allow_html=True
     )
 
-# === Nedtelling med fremdriftsindikator ===
+# === Nedtelling med fremdriftsindikator og feilsikring ===
 def pause_nedtelling(sekunder=5, tekst="Starter om"):
-    box = st.empty()
-progress = st.empty()
-for i in range(sekunder, 0, -1):
-    box.markdown(f"⏳ {tekst} {i} sekunder...")
-    progress.progress((sekunder - i) / sekunder)
-    time.sleep(1)
-box.markdown("🎬 Fortsetter!")
-progress.empty()
+    try:
+        sekunder = int(sekunder)
+    except Exception:
+        st.error("🚨 pause_nedtelling() fikk en ugyldig verdi for sekunder.")
+        return
 
+    box = st.empty()
+    progress = st.empty()
+    for i in range(sekunder, 0, -1):
+        box.markdown(f"⏳ {tekst} {i} sekunder...")
+        progress.progress((sekunder - i) / sekunder)
+        time.sleep(1)
+    box.markdown("🎬 Fortsetter!")
+    progress.empty()
 
 # === Spiller metronomen ===
 def spill_metronom(bpm, takter=8, slag_per_takt=4):
@@ -87,14 +92,4 @@ if program_knapp:
         if st.session_state.stopp:
             break
 
-        tempo_info.markdown(f"## 🔁 Tempo: {bpm} BPM")
-        spill_metronom(bpm, takter=takter_per_tempo)
-
-        if st.session_state.stopp:
-            break
-
-        if i < len(tempoprogram) - 1:
-            time.sleep(15)  # Pause mellom tempo
-            pause_nedtelling(5, tekst="Nedtelling før neste tempo")
-
-    tempo_info.markdown("✅ Hele programmet er ferdig!")
+        tempo_info.m_
