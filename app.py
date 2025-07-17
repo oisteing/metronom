@@ -1,39 +1,36 @@
 import streamlit as st
 import time
-from pydub.generators import Sine
-from pydub import AudioSegment
-import tempfile
 
-st.title("🎵 Metronom med program")
+st.set_page_config(page_title="Metronom", layout="centered")
+st.title("🎵 Enkel Metronom med Program")
 
 tempo = st.slider("Velg tempo (BPM)", 30, 240, 100)
 start = st.button("Start metronom")
 stop = st.button("Stopp")
 program_knapp = st.button("Program")
 
-# === Lag to klikkelyder ===
-def lag_klikkelyd(frekvens=1000):
-    lyd = Sine(frekvens).to_audio_segment(duration=50).apply_gain(-3)
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-        lyd.export(f.name, format="wav")
-        return f.name
+# Last inn lydfilene
+try:
+    with open("dark_click.wav", "rb") as f:
+        lyd_mørk = f.read()
+    with open("light_click.wav", "rb") as f:
+        lyd_lys = f.read()
+except FileNotFoundError:
+    st.error("❌ Fant ikke klikkelydene. Sørg for at 'dark_click.wav' og 'light_click.wav' finnes i mappa.")
+    st.stop()
 
-lyd_lys = lag_klikkelyd(1000)
-lyd_mørk = lag_klikkelyd(700)
-
+# Intern stoppstatus
 if 'stopp' not in st.session_state:
     st.session_state.stopp = False
 
-# === Nedtelling med progressbar ===
-def pause_nedtelling(sekunder=5):
+def pause_nedtelling(sekunder=5, tekst="Starter om"):
     with st.empty():
         for i in range(sekunder, 0, -1):
-            st.markdown(f"⏳ Starter om {i} sekunder...")
+            st.markdown(f"⏳ {tekst} {i} sekunder...")
             st.progress((sekunder - i) / sekunder)
             time.sleep(1)
-        st.markdown("🎬 Starter!")
+        st.markdown("🎬 Fortsetter!")
 
-# === Spiller en takt med forskjellig første slag ===
 def spill_metronom(bpm, takter=8, slag_per_takt=4):
     intervall = 60 / bpm
     total_slag = takter * slag_per_takt
@@ -41,12 +38,12 @@ def spill_metronom(bpm, takter=8, slag_per_takt=4):
         if st.session_state.stopp:
             break
         if i % slag_per_takt == 0:
-            st.audio(lyd_mørk, format="audio/wav", start_time=0)
+            st.audio(lyd_mørk, format="audio/wav")
         else:
-            st.audio(lyd_lys, format="audio/wav", start_time=0)
+            st.audio(lyd_lys, format="audio/wav")
         time.sleep(intervall)
 
-# === Tempo-programmet med 5 sek start og 20 sek pause ===
+# Fast program
 tempoprogram = [48, 58, 72, 84, 96, 108, 120]
 takter_per_tempo = 8
 
@@ -67,5 +64,5 @@ if program_knapp:
         spill_metronom(bpm, takter=takter_per_tempo)
         if st.session_state.stopp:
             break
-        pause_nedtelling(20)
-    st.markdown("✅ Ferdig med hele programmet.")
+        pause_nedtelling(20, tekst="Pause i")
+    st.markdown("✅ Programmet er ferdig.")
