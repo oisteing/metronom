@@ -39,12 +39,15 @@ def spill_lyd(data):
 
 # === Nedtelling med fremdriftsindikator ===
 def pause_nedtelling(sekunder=5, tekst="Starter om"):
-    with st.empty() as box:
-        for i in range(sekunder, 0, -1):
-            box.markdown(f"⏳ {tekst} {i} sekunder...")
-            box.progress((sekunder - i) / sekunder)
-            time.sleep(1)
-        box.markdown("🎬 Fortsetter!")
+    box = st.empty()
+progress = st.empty()
+for i in range(sekunder, 0, -1):
+    box.markdown(f"⏳ {tekst} {i} sekunder...")
+    progress.progress((sekunder - i) / sekunder)
+    time.sleep(1)
+box.markdown("🎬 Fortsetter!")
+progress.empty()
+
 
 # === Spiller metronomen ===
 def spill_metronom(bpm, takter=8, slag_per_takt=4):
