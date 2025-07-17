@@ -92,4 +92,14 @@ if program_knapp:
         if st.session_state.stopp:
             break
 
-        tempo_info.m_
+        tempo_info.markdown(f"## 🔁 Tempo: {bpm} BPM")
+        spill_metronom(bpm, takter=takter_per_tempo)
+
+        if st.session_state.stopp:
+            break
+
+        if i < len(tempoprogram) - 1:
+            time.sleep(15)  # Pause mellom tempo
+            pause_nedtelling(5, tekst="Nedtelling før neste tempo")
+
+    tempo_info.markdown("✅ Hele programmet er ferdig!")
